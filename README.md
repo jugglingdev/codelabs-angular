@@ -8,6 +8,7 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
   - [Table of Contents](#table-of-contents)
   - [Course Content](#course-content)
     - [The Basics](#the-basics)
+      - [Components](#components)
     - [Debugging](#debugging)
     - [Component \& Databinding Deep Dive](#component--databinding-deep-dive)
     - [Directives Deep Dive](#directives-deep-dive)
@@ -33,6 +34,41 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
 ## Course Content
 
 ### The Basics
+
+`ng serve` to spin up server
+
+***
+
+* Angular is a JS framework that changes your DOM at runtime
+
+index.html has app-root tag (component)
+all app component files are related to app-root component
+
+app.component.ts has { Component }
+
+***
+
+main.ts is first code that gets executed and  has imports including bootstrapModule { AppModule } which references app.module.ts
+app.module.ts has @NgModule that lists [AppComponent]
+
+Angular then analyzes the AppComponent, read the set up in app.component.ts and knows the selector app-root
+it can now handle app-root in index.html and insert app-root component
+
+main.ts > app.module.ts > app.component.css/html/spec/ts files
+
+#### Components
+
+The entire application is build from components.
+The app (root) component holds the entire application
+Components allow you to split up your complex application into reusable parts
+
+***
+
+`ng generate component servers` or `ng g c servers`
+
+***
+
+must have templates listed in @Component (*.component.ts)
 
 ### Debugging
 
