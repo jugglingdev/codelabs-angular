@@ -11,5 +11,9 @@ import { Component } from '@angular/core';
   `]
 })
 export class AppComponent {
+  username: string = '';
 
+  onReset() {
+    this.username = '';
+  }
 }
