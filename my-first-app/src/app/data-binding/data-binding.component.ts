@@ -6,5 +6,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./data-binding.component.css']
 })
 export class DataBindingComponent {
+  username: string = '';
 
+  onReset() {
+    this.username = '';
+  }
 }
