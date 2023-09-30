@@ -3,21 +3,26 @@ import { Component } from '@angular/core';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  // styleUrls: ['./app.component.css']
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  username: string = '';
-  showSecret = false;
-  log = [];
+  serverElements = [];
+  newServerName = '';
+  newServerContent = '';
 
-  onReset() {
-    this.username = '';
+  onAddServer() {
+    this.serverElements.push({
+      type: 'server',
+      name: this.newServerName,
+      content: this.newServerContent
+    });
   }
 
-  onToggleDetails() {
-    this.showSecret = !this.showSecret;
-    this.log.push(this.log.length + 1);
-    // this.log.push(new Date());
+  onAddBlueprint() {
+    this.serverElements.push({
+      type: 'blueprint',
+      name: this.newServerName,
+      content: this.newServerContent
+    });
   }
 }

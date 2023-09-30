@@ -1,29 +1,34 @@
 <div class="container">
   <div class="row">
     <div class="col-xs-12">
-      <ol>
-        <li>Add a button which says 'Display Details'</li>
-        <li>Add a paragraph with any content of your choice (e.g. 'Secret Password = tuna')</li>
-        <li>Toggle the displaying of that paragraph with the button created in the first step</li>
-        <li>Log all button clicks in an array and output that array below the secret paragraph (maybe log a timestamp or simply an incrementing number)</li>
-        <li>Starting at the 5th log item, give all future log items a blue background (via ngStyle) and white color (ngClass)</li>
-      </ol>
-<!--  <button class="btn btn-primary" (click)="showSecret = !showSecret">Display Details</button> -->
-      <button class="btn btn-primary" (click)="onToggleDetails()">Display Details</button>
-      <p *ngIf="showSecret">Secret Password = pickles</p>
+      <p>Add new Servers or blueprints!</p>
+      <label>Server Name</label>
+      <input type="text" class="form-control" [(ngModel)]="newServerName">
+      <label>Server Content</label>
+      <input type="text" class="form-control" [(ngModel)]="newServerContent">
+      <br>
+      <button
+        class="btn btn-primary"
+        (click)="onAddServer()">Add Server</button>
+      <button
+        class="btn btn-primary"
+        (click)="onAddBlueprint()">Add Server Blueprint</button>
+    </div>
+  </div>
+  <hr>
+  <div class="row">
+    <div class="col-xs-12">
       <div
-        *ngFor="let logItem of log"
-        [ngStyle]="{backgroundColor: logItem >= 5 ? 'blue' : 'transparent'}"
-        [ngClass]="{'white-text': logItem >= 5}"
-        >{{ logItem }}
+        class="panel panel-default"
+        *ngFor="let element of serverElements">
+        <div class="panel-heading">{{ element.name }}</div>
+        <div class="panel-body">
+          <p>
+            <strong *ngIf="element.type === 'server'" style="color: red">{{ element.content }}</strong>
+            <em *ngIf="element.type === 'blueprint'">{{ element.content }}</em>
+          </p>
+        </div>
       </div>
-<!--  <div
-        *ngFor="let logItem of log; let i = item"
-        [ngStyle]="{backgroundColor: i > 5 ? 'blue' : 'transparent'}"
-        [ngClass]="{'white-text': i > 5}"
-        >{{ logItem }}
-      </div> -->
     </div>
   </div>
 </div>
-
