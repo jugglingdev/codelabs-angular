@@ -10,7 +10,8 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
     - [The Basics](#the-basics)
     - [Getting Started](#getting-started)
       - [Components](#components)
-      - [Databinding](#databinding)
+      - [Data Binding](#data-binding)
+      - [Directives](#directives)
   - [Resources](#resources)
   - [Acknowledgements](#acknowledgements)
 
@@ -71,34 +72,58 @@ Option B: Create a New Component with the Angular CLI
 
 Now that we've looked at building components, let's take a look at different ways we can output data.
 
-#### Databinding
+#### Data Binding
 
-Databinding refers to methods to output data.  It establishes a connection between the app's data (typically in the TypeScript code) and the user interface (HTML) so that changes in one are automatically reflected in the other.  The main types of databinding in Angular are:
+Data binding refers to methods to output data.  It establishes a connection between the app's data (typically in the TypeScript code) and the user interface (HTML) so that changes in one are automatically reflected in the other.  The main types of data binding in Angular are:
 
 1. **One-Way Data Binding**:
    - **String Interpolation**:
-     - embed expressions or variables from TypeScript code into HTML templates (print something in the template)
-     - when the data in the TypeScript code changes, the HTML content is automatically updated
-     - must return a string
-     - cannot use blocks (single lines only)
+     - Embed expressions or variables from TypeScript code into HTML templates (print something in the template)
+     - When the data in the TypeScript code changes, the HTML content is automatically updated
+     - Must return a string
+     - Cannot use blocks (single lines only)
      - `{{ variableName }}`
    - **Property Binding**:
-     - bind an HTML element's property (e.g. the 'src' attribute of an image) to a property in the TypeScript code
-     - when the TypeScript property changes, the HTML property is updated
-     - do NOT mix string interpolation with property binding as it will break the app (e.g. `[disabled]="{{!allowNewServer}}"`)
+     - Bind an HTML element's property (e.g. the 'src' attribute of an image) to a property in the TypeScript code
+     - When the TypeScript property changes, the HTML property is updated
+     - Do NOT mix string interpolation with property binding as it will break the app (e.g. `[disabled]="{{!allowNewServer}}"`)
      - `[property]="tsProperty"`
 2. **Two-Way Data Binding**:
-   - allows changes to propagate in both directions: from the TypeScript code to the HTML template and from the HTML template back to the TypeScript code
-   - commonly used with form elements such as input fields
-   - be sure to `import { FormsModule } from '@angular/forms';` in `app.module.ts`
-   - add `FormsModule` to the `imports` array in the `@NgModule` decorator
+   - Allows changes to propagate in both directions: from the TypeScript code to the HTML template and from the HTML template back to the TypeScript code
+   - Commonly used with form elements such as input fields
+   - Be sure to `import { FormsModule } from '@angular/forms';` in `app.module.ts`
+   - Add `FormsModule` to the `imports` array in the `@NgModule` decorator
    - `[(ngModel)]="tsProperty"`
 3. **Event Binding**:
-   - listen to events (e.g., button clicks, mouse events, form submissions) in the HTML templates and respond to them by executing functions in the TypeScript code
+   - Listen to events (e.g., button clicks, mouse events, form submissions) in the HTML templates and respond to them by executing functions in the TypeScript code
    - `(click)="functionName()"`
-   - optionally pass the event object `$event` as an argument in the function to access event information (e.g., mouse coordinates, event target, key codes)
+   - Optionally pass the event object `$event` as an argument in the function to access event information (e.g., mouse coordinates, event target, key codes)
 
-These databinding methods simplify the development process by automatically keeping the user interface in sync with the data model.
+These data binding methods simplify the development process by automatically keeping the user interface in sync with the data model.
+
+#### Directives
+
+Directives are special markers in the HTML that tell Angular to do something to a DOM element.  Add directives with the attribute selector (or CSS classes or element style selectors).
+
+Built-in directives include:
+
+1. **Structural directives**:
+   - Add or remove elements from the DOM
+   - Typically prefixed with `*`
+   - Examples:
+     - `*ngIf="property"`: Conditionally adds or removes an element based on a condition
+       - Also `*ngIf='property; else localReference'` with `#localReference`
+     - `*ngFor="let item of items"`: repeats an element for each item in a collection
+2. **Attribute directives**:
+   - Modify the appearance or behavior of an element, component, or other directive
+   - Look like normal attributes without a star
+   - Examples:
+     - `[ngStyle]="attribute: property"`: Applies inline CSS styles to elements based on conditions
+     - `[ngClass]="{class: condition}"`: Adds or removes CSS classes based on conditions
+       - `[ngClass]="{'active': isActive, 'error': hasError}"` is an example
+     - `[(ngModel)]="property"`: two-way data binding for form elements, binding input values to variables and vice versa
+
+While these are built-in directives, it is also possible to create custom directives.  It's also important to note that lifecycle hooks as well as `@Input` and `@Output` properties and `@ViewChild` and `@ContentChild` decorators are all other features of directives.  We'll look each of these in upcoming sections.
 
 ## Resources
 
