@@ -8,107 +8,71 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
   - [Table of Contents](#table-of-contents)
   - [Course Content](#course-content)
     - [The Basics](#the-basics)
+    - [Getting Started](#getting-started)
       - [Components](#components)
-    - [Debugging](#debugging)
-    - [Component \& Databinding Deep Dive](#component--databinding-deep-dive)
-    - [Directives Deep Dive](#directives-deep-dive)
-    - [Using Services \& Dependency Injection](#using-services--dependency-injection)
-    - [Changing Pages with Routing](#changing-pages-with-routing)
-    - [Understanding Observables](#understanding-observables)
-    - [Handling Forms in Angular Apps](#handling-forms-in-angular-apps)
-    - [Using Pipes to Transform Output](#using-pipes-to-transform-output)
-    - [Making Http Requests](#making-http-requests)
-    - [Authentication \& Route Protection in Angular](#authentication--route-protection-in-angular)
-    - [Dynamic Components](#dynamic-components)
-    - [Angular Modules \& Optimizing Angular Apps](#angular-modules--optimizing-angular-apps)
-    - [Deploying an Angular App](#deploying-an-angular-app)
-    - [Standalone Components](#standalone-components)
-    - [Angular Signals](#angular-signals)
-    - [Angular Animations](#angular-animations)
-    - [Adding Offline Capabilities with Service Workers](#adding-offline-capabilities-with-service-workers)
-    - [A Basic Introduction to Unit Testing in Angular Apps](#a-basic-introduction-to-unit-testing-in-angular-apps)
-    - [Angular as a Platform \& Closer Look at the CLI](#angular-as-a-platform--closer-look-at-the-cli)
-  - [Reflection](#reflection)
+  - [Resources](#resources)
   - [Acknowledgements](#acknowledgements)
 
 ## Course Content
 
 ### The Basics
 
-`ng serve` to spin up server
+Angular is an open-source framework for building modern, single-page web applications.  It is based on TypeScript and is known for its modularity, reusability, and rich set of features.
 
-***
+### Getting Started
 
-* Angular is a JS framework that changes your DOM at runtime
+To start building with Angular:
 
-index.html has app-root tag (component)
-all app component files are related to app-root component
+1. **Setup**: Install Node.js and the Angular CLI (Command Line Interface).
+2. **Create a New Project**: `cd` into the directory you want the app to be in.  Run `ng new app-name` to create a new app.  Optionally add `--no-strict` to remove strict mode.
+3. **Generate Components**: `cd` into `app-name`.  Run `ng generate component component-name` to create a new component.  Use `ng g c component-name` as shorthand.  Add `--skip-tests` to exclude generating `.spec` files.
+4. **Code**: Write the HTML templates, add styles in CSS, and write TypeScript code to define each component's behavior.
+5. **Serve**: Run `ng serve` to start a development server that automatically reloads the app when you make changes.  Use `ng s --o` to serve the app and open it in a new browser tab.
+6. **Optional Styles**: If you'd like to style with a library such as Bootstrap, `cd` into your project directory.  Run `npm install --save bootstrap@3`.  Add `"node_modules/bootstrap/dist/css/bootstrap.min.css",` to `styles` in the `angular.json` file.
 
-app.component.ts has { Component }
-
-***
-
-main.ts is first code that gets executed and  has imports including bootstrapModule { AppModule } which references app.module.ts
-app.module.ts has @NgModule that lists [AppComponent]
-
-Angular then analyzes the AppComponent, read the set up in app.component.ts and knows the selector app-root
-it can now handle app-root in index.html and insert app-root component
-
-main.ts > app.module.ts > app.component.css/html/spec/ts files
+Check out [Resources](#resources) below for official documentation.
 
 #### Components
 
-The entire application is build from components.
-The app (root) component holds the entire application
-Components allow you to split up your complex application into reusable parts
+In Angular, the entire application is built from components.  Each component includes templates (HTML), styles (CSS), and logic (TypeScript) for that part of the UI.  Think of components as the building blocks that make up the app.  They allow you to split up your complex application into reusable parts.
 
-***
+The `app-root` component holds the entire application.  While `index.html`, `styles.css`, and `main.ts` look fairly bare, the `app` component files hold information about the `app` component and any further nested components.  The root component files include:
 
-`ng generate component servers` or `ng g c servers`
+- `app.component.html`
+- `app.component.css`
+- `app.component.ts`
+- `app.component.spec.ts`
+- `app.module.ts`
 
-***
+For a more specific breakdown, `main.ts` is the code the gets executed first.  It has imports including `{ AppModule }`, referencing `app.module.ts`.  `app.module.ts` imports `{ AppComponent }` and lists `AppComponent` in the `@NgModule` decorator, referencing `app.component.ts`.  Angular then reads the set up in `app.component.ts` and sees the selector `app-root`, the tag used in `index.html`, inserting the `app-root` component.
 
-must have templates listed in @Component (*.component.ts)
+`main.ts` > `app.module.ts` > `app.component.ts/html/css/spec` files
 
-### Debugging
+For each new component created, HTML, CSS, and TypeScript files are included.  Examples of components include headers, footers, cards, articles, and sidebars.  These new components are nested in the `app-root` component.  Just as the `app-root` element is used in `index.html`, the `new-component` elements are included in `app.component.html`.  They are also imported to and added to the `@NgModule` decorator of `app.module.ts`.
 
-### Component & Databinding Deep Dive
+There are 2 options to creating components:  manually and with the Angular CLI.  Note that using the CLI will do the heavy lifting for you, adding all the import statements and `@NgModule` declarations.
 
-### Directives Deep Dive
+Option A: Manually Create a New Component
 
-### Using Services & Dependency Injection
+1. Create a folder under `app` with the component name
+2. Add a `new-component.component.ts` file
+3. Include import, decorator, and export statements
+   1. Add `import { Component } from '@angular.core'` to the top of the `.ts` file
+   2. Add `@Component ({selector: 'app-new-component', templateUrl: 'new-component.component.html', styleUrls: []'new-component-component-css']})`
+   3. Add `export class NewComponent { }`
+4. Create `new-component.component.html` and `new-component.component.css` files for component content and style.  Alternative use inline templates and styles under the `@Component` decorator
+5. Include `import { NewComponent } from './new-component/new-component.component'` statement and `NewComponent` in the `@NgModule` decorator in `app.module.ts`
 
-### Changing Pages with Routing
+Option B: Create a New Component with the Angular CLI
 
-### Understanding Observables
+1. In the application directory, run `ng generate component new-component` or `ng g c new-component`
+2. This option creates all the files for you with the import, decorator, and export statements already in place.  So, you're done!
 
-### Handling Forms in Angular Apps
+## Resources
 
-### Using Pipes to Transform Output
-
-### Making Http Requests
-
-### Authentication & Route Protection in Angular
-
-### Dynamic Components
-
-### Angular Modules & Optimizing Angular Apps
-
-### Deploying an Angular App
-
-### Standalone Components
-
-### Angular Signals
-
-### Angular Animations
-
-### Adding Offline Capabilities with Service Workers
-
-### A Basic Introduction to Unit Testing in Angular Apps
-
-### Angular as a Platform & Closer Look at the CLI
-
-## Reflection
+-[Angular Official Documentation](https://angular.io/)
+-[Angular CLI Documentation](https://angular.io/cli)
+-[Angular Tour of Heroes Tutorial](https://angular.io/tutorial)
 
 ## Acknowledgements
 
