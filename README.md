@@ -10,6 +10,7 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
     - [The Basics](#the-basics)
     - [Getting Started](#getting-started)
       - [Components](#components)
+      - [Databinding](#databinding)
   - [Resources](#resources)
   - [Acknowledgements](#acknowledgements)
 
@@ -50,7 +51,7 @@ For a more specific breakdown, `main.ts` is the code the gets executed first.  I
 
 For each new component created, HTML, CSS, and TypeScript files are included.  Examples of components include headers, footers, cards, articles, and sidebars.  These new components are nested in the `app-root` component.  Just as the `app-root` element is used in `index.html`, the `new-component` elements are included in `app.component.html`.  They are also imported to and added to the `@NgModule` decorator of `app.module.ts`.
 
-There are 2 options to creating components:  manually and with the Angular CLI.  Note that using the CLI will do the heavy lifting for you, adding all the import statements and `@NgModule` declarations.
+There are 2 options for creating components:  manually and with the Angular CLI.  Note that using the CLI will do the heavy lifting for you, adding all the import statements and `@NgModule` declarations.
 
 Option A: Manually Create a New Component
 
@@ -67,6 +68,37 @@ Option B: Create a New Component with the Angular CLI
 
 1. In the application directory, run `ng generate component new-component` or `ng g c new-component`
 2. This option creates all the files for you with the import, decorator, and export statements already in place.  So, you're done!
+
+Now that we've looked at building components, let's take a look at different ways we can output data.
+
+#### Databinding
+
+Databinding refers to methods to output data.  It establishes a connection between the app's data (typically in the TypeScript code) and the user interface (HTML) so that changes in one are automatically reflected in the other.  The main types of databinding in Angular are:
+
+1. **One-Way Data Binding**:
+   - **String Interpolation**:
+     - embed expressions or variables from TypeScript code into HTML templates (print something in the template)
+     - when the data in the TypeScript code changes, the HTML content is automatically updated
+     - must return a string
+     - cannot use blocks (single lines only)
+     - `{{ variableName }}`
+   - **Property Binding**:
+     - bind an HTML element's property (e.g. the 'src' attribute of an image) to a property in the TypeScript code
+     - when the TypeScript property changes, the HTML property is updated
+     - do NOT mix string interpolation with property binding as it will break the app (e.g. `[disabled]="{{!allowNewServer}}"`)
+     - `[property]="tsProperty"`
+2. **Two-Way Data Binding**:
+   - allows changes to propagate in both directions: from the TypeScript code to the HTML template and from the HTML template back to the TypeScript code
+   - commonly used with form elements such as input fields
+   - be sure to `import { FormsModule } from '@angular/forms';` in `app.module.ts`
+   - add `FormsModule` to the `imports` array in the `@NgModule` decorator
+   - `[(ngModel)]="tsProperty"`
+3. **Event Binding**:
+   - listen to events (e.g., button clicks, mouse events, form submissions) in the HTML templates and respond to them by executing functions in the TypeScript code
+   - `(click)="functionName()"`
+   - optionally pass the event object `$event` as an argument in the function to access event information (e.g., mouse coordinates, event target, key codes)
+
+These databinding methods simplify the development process by automatically keeping the user interface in sync with the data model.
 
 ## Resources
 
