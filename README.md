@@ -12,6 +12,27 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
       - [Components](#components)
       - [Data Binding](#data-binding)
       - [Directives](#directives)
+    - [Debugging](#debugging)
+    - [Component \& Data Binding Deep Dive](#component--data-binding-deep-dive)
+      - [Property \& Event Binding](#property--event-binding)
+    - [Directives Deep Dive](#directives-deep-dive)
+    - [Using Services \& Dependency Injection](#using-services--dependency-injection)
+    - [Changing Pages with Routing](#changing-pages-with-routing)
+    - [Understanding Observables](#understanding-observables)
+    - [Handling Forms in Angular Apps](#handling-forms-in-angular-apps)
+    - [Using Pipes to Transform Output](#using-pipes-to-transform-output)
+    - [Making Http Requests](#making-http-requests)
+    - [Authentication \& Route Protection in Angular](#authentication--route-protection-in-angular)
+    - [Dynamic Components](#dynamic-components)
+    - [Angular Modules \& Optimizing Angular Apps](#angular-modules--optimizing-angular-apps)
+    - [Deploying an Angular App](#deploying-an-angular-app)
+    - [Standalone Components](#standalone-components)
+    - [Angular Signals](#angular-signals)
+    - [Angular Animations](#angular-animations)
+    - [Adding Offline Capabilities with Service Workers](#adding-offline-capabilities-with-service-workers)
+    - [A Basic Introduction to Unit Testing in Angular Apps](#a-basic-introduction-to-unit-testing-in-angular-apps)
+    - [Angular as a Platform \& Closer Look at the CLI](#angular-as-a-platform--closer-look-at-the-cli)
+  - [Reflection](#reflection)
   - [Resources](#resources)
   - [Acknowledgements](#acknowledgements)
 
@@ -124,6 +145,64 @@ Built-in directives include:
      - `[(ngModel)]="property"`: two-way data binding for form elements, binding input values to variables and vice versa
 
 While these are built-in directives, it is also possible to create custom directives.  It's also important to note that lifecycle hooks as well as `@Input` and `@Output` properties and `@ViewChild` and `@ContentChild` decorators are all other features of directives.  We'll look each of these in upcoming sections.
+
+### Debugging
+
+Angular provides a variety of tools to help you debug your application.  Error messages in the browser console, for example, contain clues as to what may be the cause of a given bug.  The first part of an error is often the error type (e.g., `TypeError`).  Next is a message briefly describing the issue.  The error message also often lists the file and line number where the error occurred.  Often, a stack trace details the function calls that led to the error beginning with the most recent function at the top.  
+
+A sample error message is:
+
+```js
+EXCEPTION:
+Error in ./AppComponent class 
+AppComponent - inline template:4:6 
+caused by: Cannot read property 'push' 
+of undefined
+```
+
+When debugging with Chrome Dev Tools, there are a couple options.  The first to know is that you can access the Sources tab and look for the code you need in `main.bundle.js`.  Clicking a line in the compiled JavaScript code will open up the `app.component.ts` file and you can debug from there.
+
+However, if a file gets large, it can be very difficult to dig through code.  To directly access your code file structure as it is in your IDE, open up `webpack://` in the Sources tab and proceed to the `src` and `app` folders to find all the TypeScript files and debug the code.
+
+### Component & Data Binding Deep Dive
+
+#### Property & Event Binding
+
+### Directives Deep Dive
+
+### Using Services & Dependency Injection
+
+### Changing Pages with Routing
+
+### Understanding Observables
+
+### Handling Forms in Angular Apps
+
+### Using Pipes to Transform Output
+
+### Making Http Requests
+
+### Authentication & Route Protection in Angular
+
+### Dynamic Components
+
+### Angular Modules & Optimizing Angular Apps
+
+### Deploying an Angular App
+
+### Standalone Components
+
+### Angular Signals
+
+### Angular Animations
+
+### Adding Offline Capabilities with Service Workers
+
+### A Basic Introduction to Unit Testing in Angular Apps
+
+### Angular as a Platform & Closer Look at the CLI
+
+## Reflection
 
 ## Resources
 
