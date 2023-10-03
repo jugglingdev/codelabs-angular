@@ -15,6 +15,9 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
     - [Debugging](#debugging)
     - [Component \& Data Binding Deep Dive](#component--data-binding-deep-dive)
       - [Property \& Event Binding](#property--event-binding)
+      - [View Encapsulation](#view-encapsulation)
+      - [Passing data around](#passing-data-around)
+      - [Lifecycle hooks](#lifecycle-hooks)
     - [Directives Deep Dive](#directives-deep-dive)
     - [Using Services \& Dependency Injection](#using-services--dependency-injection)
     - [Changing Pages with Routing](#changing-pages-with-routing)
@@ -166,7 +169,234 @@ However, if a file gets large, it can be very difficult to dig through code.  To
 
 ### Component & Data Binding Deep Dive
 
+Now that we've gotten a little exposure to components, data binding, and directives, it's time to go a little deeper.
+
 #### Property & Event Binding
+
+We've previously learned about property and event binding.  Remember, we can use property and event binding on:
+
+- HTML elements (native properties & events)
+- Directives (custom properties & events)
+- Components (custom properties & events)
+
+The next feature to explore related to property and event binding is communication between parent and child components.  The `@Input()` decorator, `@Output()` decorator, and `EventEmitter` are all essential for passing data from a parent to a child and emitting events from a child to a parent.
+
+1. **`@Input()` Decorator**: This decorator allows a parent component to pass data to a child.  It decorates a property in the child component's class, making it a public input property that can be bound to by the parent component in the child's HTML template.  You can pass an optional alias as an argument (e.g., `@Input('alias')`) if you want to refer to the property with a different name outside of the component class.  The following example binds `childMessage` in the child component to `messageFromParent` in the parent:
+
+    ```ts
+    // Child Component
+    import { Component, Input } from '@angular/core';
+
+    @Component({
+      selector: 'app-child',
+      template: '<p>{{ childMessage }}</p>',
+    })
+    export class ChildComponent {
+      @Input() childMessage: string;
+    }
+    ```
+
+    ```ts
+    // Parent Component
+    import { Component } from '@angular/core';
+
+    @Component({
+      selector: 'app-parent',
+      template: `
+        <app-child [childMessage]="messageFromParent"></app-child>
+      `,
+    })
+    export class ParentComponent {
+      messageFromParent = 'Hello from Parent!';
+    }
+    ```
+
+2. **`@Output()` Decorator and `EventEmitter`**: This combo is used to emit custom events from a child component to a parent component.  It's useful for when you want the child to notify its parent about a specific action or event. `@Output()` can also take an alias.  This example creates an `EventsEmitter` called `childEvent`.  When the button is clicked, `emitEvent()` is called, emitting the custom even with the message.  The parent component listens for this event using `(childEvent)="handleChildEvent($event)"` and updates the `messageFromChild` property when the event is emitted:
+
+    ```ts
+    // Child Component
+    import { Component, Output, EventEmitter } from '@angular/core';
+
+    @Component({
+      selector: 'app-child',
+      template: '<button (click)="emitEvent()">Click me</button>',
+    })
+    export class ChildComponent {
+      @Output() childEvent = new EventEmitter<string>();
+
+      emitEvent() {
+        this.childEvent.emit('Event emitted from Child');
+      }
+    }
+    ```
+
+    ```ts
+    // Parent Component
+    import { Component } from '@angular/core';
+
+    @Component({
+      selector: 'app-parent',
+      template: `
+        <app-child (childEvent)="handleChildEvent($event)"></app-child>
+        <p>{{ messageFromChild }}</p>
+      `,
+    })
+    export class ParentComponent {
+      messageFromChild: string;
+
+      handleChildEvent(message: string) {
+        this.messageFromChild = message;
+      }
+    }
+    ```
+
+The combination of `@Input()`, `@Output()`, and `EventEmitter` provides bi-directional communication between parent and child, enabling data to pass from parent to child and event handling from child to parent.
+
+#### View Encapsulation
+
+In Angular, a *view* refers to the UI of a component or application.  It represents anything that is visible to the user and contains the HTML templates, styles, and components that make up the UI.  
+
+With that in mind, Angular encapsulates the CSS styles defined within components.  There are 3 modes for view encapsulation:
+
+1. **Emulated (Default)**: In this mode, Angular emulates shadow DOM behavior by adding unique attributes to HTML elements within a component's view.  Styles are scoped to the component and will not affect elements outside the component.
+2. **None**: This mode has no view encapsulation.  Styles defined in a component's CSS are applied globally and can affect elements outside the component.
+3. **ShadowDom**: This mode uses the browser's native Shadow DOM to encapsulate styles.  It provides true isolation of styles within a component's view, but it may not be supported in all browsers.
+
+To specify the view encapsulation mode for a component, use the `@Component` decorator's `encapsulation` property.  Be sure to import `ViewEncapsulation` from `@angular/core`:
+
+```ts
+@Component({
+  selector: 'app-example',
+  templateUrl: './example.component.html',
+  styleUrls: ['./example.component.css'],
+  encapsulation: ViewEncapsulation.Emulated,
+})
+```
+
+#### Passing data around
+
+Next, let's look at more ways to pass data around.  We've got 3 new methods to do so:
+
+1. **Using Local References**: Local references let you get access to elements in your template and then use them directly in the template or pass them into TypeScript code.  To create one, use `#localReference` with a custom name in the HTML template element tag.  The following example passes input data into the TypeScript code:
+
+    ```html
+    <!-- app.component.html -->
+    <input #inputRef type="text" placeholder="Enter data">
+    <button (click)="handleButtonClick(inputRef.value)">Submit</button>
+    ```
+
+    ```ts
+    // app.component.ts
+    import { Component } from '@angular/core';
+
+    @Component({
+      selector: 'app-root',
+      templateUrl: './app.component.html',
+    })
+    export class AppComponent {
+      handleButtonClick(data: string) {
+        console.log(`Data submitted: ${data}`);
+      }
+    }
+    ```
+
+2. **Using `@ViewChild()` Decorator**:  The `@ViewChild()` decorator allows you to access child components or DOM elements in a parent component.  In this example, we use the decorator to access the `ChildComponent` instance from the parent component.  After the view is initialized (see `ngAfterViewInit` in [Lifecycle Hooks](####lifecycle-hooks)), we can access and use data from the child component:
+
+    ```ts
+    // child.component.ts
+    import { Component } from '@angular/core';
+
+    @Component({
+      selector: 'app-child',
+      template: '<p>{{ childData }}</p>',
+    })
+    export class ChildComponent {
+      childData: string = 'Child data';
+    }
+    ```
+
+    ```ts
+    // app.component.ts
+    import { Component, ViewChild, AfterViewInit } from '@angular/core';
+    import { ChildComponent } from './child.component';
+
+    @Component({
+      selector: 'app-root',
+      templateUrl: './app.component.html',
+    })
+    export class AppComponent implements AfterViewInit {
+      @ViewChild(ChildComponent) childComponent: ChildComponent;
+
+      ngAfterViewInit() {
+        console.log(`Child data from @ViewChild(): ${this.childComponent.childData}`);
+      }
+    }
+    ```
+
+3. **Using `ng-content`**: The `ng-content` directive allows you to project content form a parent component into a child component's template.  It looks for content between opening and closing tags and then projects that content into the component.  In the following example, we project the `<p>` element content from the parent component into the `ChildComponent` using `ng-content`:
+
+    ```ts
+    // child.component.ts
+    import { Component } from '@angular/core';
+
+    @Component({
+      selector: 'app-child',
+      template: '<div><ng-content></ng-content></div>',
+    })
+    export class ChildComponent {}
+    ```
+
+    ```ts
+    // app.component.ts
+    import { Component } from '@angular/core';
+
+    @Component({
+      selector: 'app-root',
+      template: `
+        <app-child>
+          <p>This is content passed via ng-content.</p>
+        </app-child>
+      `,
+    })
+    export class AppComponent {}
+    ```
+
+**Bonus**:  While `@ViewChild()` is used to query and access elements, components, or directives a part of a component's view, `@ContentChild()` accesses what is projected into a component through `<ng-content>`.  Here's an example of using `@ContentChild()` in combination with `<ng-content>`:
+
+```ts
+import { Component, ContentChild, ElementRef } from '@angular/core';
+
+@Component({
+  selector: 'app-child',
+  template: `
+    <ng-content></ng-content>
+  `,
+})
+export class ChildComponent {
+  @ContentChild('projectedContent') projectedContent: ElementRef;
+}
+```
+
+This example uses `@ContentChild()` to query an element with the reference `#projectedContent` that is projected into `ChildComponent` through `ng-content`.
+
+To sum up, these methods - local references, `@ViewChild()`, and `ng-content` - are ways to pass data around when working with DOM elements, child components, or content projection.
+
+#### Lifecycle hooks
+
+Directives can implement lifecycle hooks to perform actions at different stages of their life cycle. Common lifecycle hooks for directives include `ngOnChanges`, `ngOnInit`, and `ngOnDestroy`. These hooks allow you to perform actions when the directive is created, initialized, or destroyed.  Other hooks include:
+
+- `ngOnChanges`: called after a bound input property changes
+- `ngOnInit`: called once the component is initialized
+- `ngDoCheck`: called during every change detection run (click, timer fired, observable resolved, etc.); great for changing something manually because Angular didn't pick it up or something like that
+- `ngAfterContentInit`: called after content (`ng-content`) has been projected into view
+- `ngAfterContentChecked`: called every time the projected content has been checked
+- `ngAfterViewInit`: called after the component's view (and child views) has been initialized
+- `ngAfterViewChecked`: called every time the view (and child views) has been checked
+- `ngOnDestroy`: called once the component is about to be destroyed
+
+It's good to note that you can access `@ViewChild()` in lifecycle hooks.  As explained earlier, after the view is initialized, (`ngAfterViewInit` lifecycle hook), we can access and use data from the child component.  
+
+Similarly, `@ContentChild()` is commonly used with `ngAfterContentInit` to ensure that queried elements are available for interaction at the appropriate time in the component's lifecycle.
 
 ### Directives Deep Dive
 
