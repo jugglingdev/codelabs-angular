@@ -19,6 +19,12 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
       - [Passing data around](#passing-data-around)
       - [Lifecycle hooks](#lifecycle-hooks)
     - [Directives Deep Dive](#directives-deep-dive)
+      - [Custom Directives](#custom-directives)
+      - [Renderer](#renderer)
+      - [`@HostListener`](#hostlistener)
+      - [`@HostBinding`](#hostbinding)
+      - [Structural Directives](#structural-directives)
+      - [`ngSwitch`](#ngswitch)
     - [Using Services \& Dependency Injection](#using-services--dependency-injection)
     - [Changing Pages with Routing](#changing-pages-with-routing)
     - [Understanding Observables](#understanding-observables)
@@ -400,7 +406,198 @@ Similarly, `@ContentChild()` is commonly used with `ngAfterContentInit` to ensur
 
 ### Directives Deep Dive
 
+As a recap, we've learned about 2 types of directives so far:
+
+1. **Attribute**:
+   - look like a normal HTML attribute with possible data binding or event binding
+   - only affect the element they are added to
+   - Examples: `[ngClass]` and `[ngStyle]`
+2. **Structural**:
+   - look like a normal HTML attribute with a leading * for desugaring
+   - affect a whole area in the DOM by adding/removing elements
+   - Examples: `*ngFor` and `*ngIf`
+
+Note: You can only have one structural directive on a given element.
+
+#### Custom Directives
+
+While these built-in directives are very useful, it is possible to create your own custom directive.  
+
+To do so manually:
+
+1. Create a `custom-directive.directive.ts` file named after the custom directive that includes the exported class, `@Directive` decorator and `selector`, and appropriate import statements.  
+2. Add the directive to `app.module.ts` under `@NgModule` `declarations` with the import statement.  
+3. Finally, add the directive as an attribute to the template element you want it to apply to.
+
+Similarly to components, you can also run the command `ng generate directive customDirective` or `ng g d customDirective` to create a new directive through the CLI.
+
+#### Renderer
+
+Directly accessing the native element and style of a given element may result in an error.  Therefore, best practice is to use the service `renderer` and its methods to access the DOM.  This service is used to create elements, add and remove elements, update element properties, and handle events.  To use `renderer`, declare the dependency in the constructor of the component or service (Angular will then provide an instance for you).  The following code shows how you can inject `renderer` into a component:
+
+```ts
+  import { Component, Renderer2, ElementRef } from '@angular/core';
+
+  @Component({
+    selector: 'app-example',
+    template: '<div #targetElement></div>',
+  })
+  export class ExampleComponent {
+    constructor(private renderer: Renderer2, private el: ElementRef) {
+      const targetElement = this.el.nativeElement.querySelector('#targetElement');
+      
+      // Using the renderer to modify the element
+      this.renderer.setProperty(targetElement, 'innerText', 'Hello, Angular!');
+    }
+  }
+```
+
+#### `@HostListener`
+
+The `@HostListener` decorator allows you to listen to host events such as `mouseenter` and `mouseleave` on a given element.  It is used within a directive or component class.  It takes two arguments.  The first is the name of the DOM event and the second is an optional array of values that pass data to the event handler.  After the decorator comes a method to handle the event.
+
+An example of a custom directive using `@HostListener` is:
+
+```ts
+  import { Directive, HostListener } from '@angular/core';
+
+  @Directive({
+    selector: '[appCustomDirective]'
+  })
+  export class CustomDirective {
+    @HostListener('mouseenter', ['$event'])
+    onMouseEnter(event: MouseEvent) {
+      // This method is called when the mouse enters the host element.
+      // You can access the event object and perform actions here.
+    }
+  }
+```
+
+#### `@HostBinding`
+
+In Angular, the `@HostBinding` decorator binds a directive to a given property of the element it's sitting on.  Be sure to import `HostBinding`, apply the decorator to a property, and set the value.  In the following example, we bind the element's background color to a directive property of the same name and change its value based on the events `mouseenter` and `mouseleave`:
+
+```ts
+  import { Directive, HostBinding, HostListener } from '@angular/core';
+
+  @Directive({
+    selector: '[appHighlight]'
+  })
+  export class HighlightDirective {
+    @HostBinding('style.backgroundColor') backgroundColor: string;
+
+    constructor() {
+      this.backgroundColor = 'transparent';
+    }
+
+    @HostListener('mouseenter') onMouseEnter() {
+      this.backgroundColor = 'lightblue';
+    }
+
+    @HostListener('mouseleave') onMouseLeave() {
+      this.backgroundColor = 'transparent';
+    }
+  }
+```
+
+In the template, use brackets if you want to bind to a property which has the same name or alias as a directive like so:
+
+```ts
+<input [value]="inputValue" />
+```
+
+A shortcut syntax is adding property binding without square brackets if you also omit the single quotation marks:
+
+```ts
+<div id=myDynamicId></div>
+```
+
+#### Structural Directives
+
+The `*` in front of directives means that Angular will transform them into something else.  So, if you want to create your own structural directive, use `*` along with `TemplateRef`, `ViewContainerRef`, and `@Input`.
+
+Creating a custom structural directive:
+
+1. Create the directive class using the `@Directive` decorator.
+
+    ```ts
+        import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+      @Directive({
+        selector: '[appCustomDirective]'
+      })
+      export class CustomDirective {
+        constructor(
+          private templateRef: TemplateRef<any>,
+          private viewContainer: ViewContainerRef
+        ) {}
+
+        @Input() set appCustomDirective(condition: boolean) {
+          if (condition) {
+            this.viewContainer.createEmbeddedView(this.templateRef);
+          } else {
+            this.viewContainer.clear();
+          }
+        }
+      }
+    ```
+
+2. Configure the directive.  Inject the `TemplateRef` and `ViewContainerRef` to work with the template and view container.  Use the `@Input` decorator to bind a condition from the template.
+3. Apply the directive to an HTML element in the template and provide a condition.
+
+    ```html
+      <div *appCustomDirective="condition">
+        This content will be displayed when condition is true.
+      </div>
+    ```
+
+4. In the component, define the condition property.
+
+    ```ts
+      import { Component } from '@angular/core';
+
+      @Component({
+        selector: 'app-your-component',
+        template: `
+          <div *appCustomDirective="condition">
+            This content will be displayed when condition is true.
+          </div>
+        `
+      })
+      export class YourComponent {
+        condition: boolean = true; // Change this value to toggle the display.
+      }
+    ```
+
+#### `ngSwitch`
+
+If you're using a lot of `ngIf` cases, `[ngSwitch]` is a good alternative directive.  It's often used with `*ngSwitchCase` to specify different cases and `*ngSwitchDefault` to define the default case if the `[ngSwitch]` value doesn't match any of the specified cases:
+
+```html
+  <div [ngSwitch]="value">
+    <div *ngSwitchCase="'case1'">Content for case 1</div>
+    <div *ngSwitchCase="'case2'">Content for case 2</div>
+    <div *ngSwitchDefault>Default content</div>
+  </div>
+```
+
+```ts
+  import { Component } from '@angular/core';
+
+  @Component({
+    selector: 'app-your-component',
+    templateUrl: 'your-component.component.html',
+  })
+  export class YourComponent {
+    value: string = 'case1';
+
+    // You can change the value to 'case2' to see the second case's content.
+  }
+```
+
 ### Using Services & Dependency Injection
+
+
 
 ### Changing Pages with Routing
 
