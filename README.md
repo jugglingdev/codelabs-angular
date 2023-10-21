@@ -26,8 +26,11 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
       - [Structural Directives](#structural-directives)
       - [`ngSwitch`](#ngswitch)
     - [Using Services \& Dependency Injection](#using-services--dependency-injection)
+      - [Dependency Injection](#dependency-injection)
+      - [Hierarchical Injector](#hierarchical-injector)
+      - [Injecting Services into Services](#injecting-services-into-services)
+      - [Provider Configuration](#provider-configuration)
     - [Changing Pages with Routing](#changing-pages-with-routing)
-    - [Understanding Observables](#understanding-observables)
     - [Handling Forms in Angular Apps](#handling-forms-in-angular-apps)
     - [Using Pipes to Transform Output](#using-pipes-to-transform-output)
     - [Making Http Requests](#making-http-requests)
@@ -597,11 +600,80 @@ If you're using a lot of `ngIf` cases, `[ngSwitch]` is a good alternative direct
 
 ### Using Services & Dependency Injection
 
+Services are used to prevent duplication of code and to centralize data storage in Angular apps.  They act as a central repository for functions, data, and business logic that can be shared across components.
 
+#### Dependency Injection
+
+Services are set up as classes and do not require a decorator.  It's important not to manually instantiate services but rather use **Dependency Injection** to provide instances of services when they are needed.
+
+To use a service in a component, add the service name and type to the constructor of the component.  Include the service in the `providers` array of the `@Component` decorator like so:
+
+```ts
+  import { Component } from '@angular/core';
+  import { MyService } from './path/to/my.service';
+
+  @Component({
+    selector: 'app-example',
+    templateUrl: 'example.component.html',
+    providers: [MyService]
+  })
+  export class ExampleComponent {
+    constructor(private myService: MyService) {
+      // Now you can use myService in this component
+    }
+  }
+```
+
+#### Hierarchical Injector
+
+Angular creates an instance of a service for a given component and all its child components (they all share the same instance of the service).  At different levels in the application:
+
+- **AppModule**: The same instance of the service is available **application-wide**
+- **AppComponent**:  The same instance of the service is available for **all components** but **not for other services**
+- **Any other Component**:  The same instance of the service is available for **the component and all its child components**
+
+If you want to avoid multiple instances of a service, remove it from the `providers` array in the child component TypeScript files (leave it in the import and constructor, though).
+
+#### Injecting Services into Services
+
+If you need a service to be used by another service, add the `@Injectable()` decorator to the service that will be injected:
+
+```ts
+  import { Injectable } from '@angular/core';
+
+  @Injectable()
+  export class ServiceA {
+    // ...
+  }
+
+  @Injectable()
+  export class ServiceB {
+    constructor(private serviceA: ServiceA) {
+      // Now you can use serviceA in ServiceB
+    }
+  }
+```
+
+#### Provider Configuration
+
+If you're using Angular 6+ (check your package.json to find out), you can provide application-wide services in a more concise way using the `providedIn` property in the `@Injectable()` decorator:
+
+```ts
+  import { Injectable } from '@angular/core';
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MyService {
+    // ...
+  }
+```
+
+This is equivalent to manually adding the service to the `providers` array of the `AppModule`.  The advantage is that Angular can load services lazily, leading to better performance and loading speed for larger applications.  However, the traditional syntax using `providers` still works for providing services.
 
 ### Changing Pages with Routing
 
-### Understanding Observables
+
 
 ### Handling Forms in Angular Apps
 
