@@ -31,6 +31,12 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
       - [Injecting Services into Services](#injecting-services-into-services)
       - [Provider Configuration](#provider-configuration)
     - [Changing Pages with Routing](#changing-pages-with-routing)
+      - [Using `routerLink`](#using-routerlink)
+      - [`Router`](#router)
+      - [Query Parameters \& Fragments](#query-parameters--fragments)
+      - [Route Redirection](#route-redirection)
+      - [Route Guards](#route-guards)
+    - [Understanding Observables](#understanding-observables)
     - [Handling Forms in Angular Apps](#handling-forms-in-angular-apps)
     - [Using Pipes to Transform Output](#using-pipes-to-transform-output)
     - [Making Http Requests](#making-http-requests)
@@ -672,6 +678,168 @@ If you're using Angular 6+ (check your package.json to find out), you can provid
 This is equivalent to manually adding the service to the `providers` array of the `AppModule`.  The advantage is that Angular can load services lazily, leading to better performance and loading speed for larger applications.  However, the traditional syntax using `providers` still works for providing services.
 
 ### Changing Pages with Routing
+
+Routing is Angular's way of simulating the transition between different pages within a single-page application.  It allows you to navigate to different views or components based on the URL.  For example, you can have routes like `/users` and `/about` to represent different pages or views in your app.
+
+#### Using `routerLink`
+
+Instead of using traditional `href` attributes, Angular uses `routerLink` to navigate between pages.  It prevents the default behavior of full-page reloads.  You can specify routes using absolute paths (starting with `/`) or relative paths (`./` or nothing):
+
+```ts
+  <a [routerLink]="/users">Users</a>
+  <a [routerLink]="./about">About</a>
+```
+
+Additionally, add the `[routerLinkActiveOptions]` attribute to an element to control when a link is considered active.  `{exact: true}` ensures that the link is active only for the exact full path.
+
+```ts
+  <a [routerLink]="/users" [routerLinkActiveOptions]="{exact: true}">Users</a>
+```
+
+#### `Router`
+
+To work with routing in your components, inject the `Router` service:
+
+```ts
+  import { Router } from '@angular/router';
+
+  constructor(private router: Router) {
+    // Use router methods in your component
+  }
+```
+
+You can navigate programmatically using the `router.navigate` method, which takes a route path as an argument:
+
+```ts
+  this.router.navigate(['/users']);
+```
+
+You can include parameters in your routes, like `/:id`, to pass data to a component.  These parameters can be accessed using `route.snapshot.params` or as an observable using `route.params`.
+
+If you create your own observables related to routing, it's important to manage them by unsubscribing in your components.  While Angular handles some automatic unsubscription, you should use the `ngOnDestroy` lifecycle hook to perform any manual unsubscription.  Observables will be covered in more detail in the next section.
+
+#### Query Parameters & Fragments
+
+You can use query parameters and fragments in your route links.  These can be set and accessed using the `queryParams` and `fragment` properties, respectively.  Both can also be subscribe to for changes.
+
+To control how query parameters are handled when navigating between routes, use `queryParamsHandling`.  Options include `preserve` (retains previous query parameters) and `merge` (merges new query parameters with existing ones).
+
+Here's an example of query parameters & fragments working with a component called `ProductDetailsComponent` that displays details about a product.  We pass a product ID as a query parameter and a section as a fragment to this component.
+
+```ts
+  // app-routing-module.ts
+  import { NgModule } from '@angular/core';
+  import { RouterModule, Routes } from '@angular/router';
+  import { ProductDetailsComponent } from './product-details.component';
+
+  const routes: Routes = [
+    { path: 'product/:id', component: ProductDetailsComponent }
+  ];
+
+  @NgModule({
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule]
+  })
+  export class AppRoutingModule {}
+
+  // product-details.component.ts
+  import { Component } from '@angular/core';
+  import { ActivatedRoute } from '@angular/router';
+
+  @Component({
+    selector: 'app-product-details',
+    template: `
+      <h2>Product Details</h2>
+      <p>Product ID: {{ productId }}</p>
+      <p>Section: {{ section }}</p>
+    `
+  })
+  export class ProductDetailsComponent {
+    productId: string;
+    section: string;
+
+    constructor(private route: ActivatedRoute) {
+      // Access query parameters and fragments using the ActivatedRoute service
+      this.route.queryParams.subscribe(params => {
+        this.productId = params['id'];
+      });
+
+      this.route.fragment.subscribe(fragment => {
+        this.section = fragment;
+      });
+    }
+  }
+
+  // Link in product-details.component.html
+  <a [routerLink]="'/product/123'" [queryParams]="{ id: '123' }" [fragment]="'overview'">Product 123 Overview</a>
+```
+
+In this example, we're linking to the `/product/123` route, passing the `id` query parameter with a value of `123` and setting the fragment to `overview`.  Clicking the link will navigate to the `ProductDetailsComponent` and the component will extract the query parameters and fragment values form the route an display them.
+
+#### Route Redirection
+
+To configure route redirection, use `redirectTo` in the route configuration:
+
+```ts
+  { path: '', redirectTo: '/somewhere-else', pathMatch: 'full' }
+```
+
+The `pathMatch: 'full'` ensures that the full path must match for the redirection to occur.  This avoids redirecting for paths starting with an empty string.  
+
+`**` serves as a wildcard.  Make sure it's the very last path in the list of routes when in use.
+
+#### Route Guards
+
+Angular provides route guards like `canActivate` and `canActivateChild` that allow you to implement logic to determine if a route should be activated or not.  These guards can be added to route configurations to control access to specific routes based on conditions.
+
+This example of a route guard prevents access to a specific route if the user is not authenticated:
+
+```ts
+  // Create the Route Guard (AuthGuard service)
+  import { Injectable } from '@angular/core';
+  import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
+  import { Observable } from 'rxjs';
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AuthGuard implements CanActivate {
+    constructor(private router: Router) {}
+
+    canActivate(
+      route: ActivatedRouteSnapshot,
+      state: RouterStateSnapshot
+    ): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+      // Check if the user is authenticated (you would typically have your own authentication logic)
+      const isAuthenticated = /* Your authentication logic here */ true;
+
+      if (isAuthenticated) {
+        return true; // Allow access to the route
+      } else {
+        // Redirect to the login page or any other page
+        return this.router.createUrlTree(['/login']);
+      }
+    }
+  }
+
+  // Add the Route Guard to your route configuration
+  const routes: Routes = [
+  // ...
+  {
+    path: 'dashboard',
+    component: DashboardComponent,
+    canActivate: [AuthGuard] // Add the AuthGuard to protect this route
+  },
+  // ...
+  ];
+
+  // Use the guard in your component
+  <a [routerLink]="'/dashboard'">Go to Dashboard</a>
+```
+
+The `AuthGuard` will prevent unauthorized access to the `/dashboard` route and users will be redirected to the login page or another specified route if they are not authenticated.
+
+### Understanding Observables
 
 
 
