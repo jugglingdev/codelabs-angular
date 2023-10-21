@@ -37,6 +37,9 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
       - [Route Redirection](#route-redirection)
       - [Route Guards](#route-guards)
     - [Understanding Observables](#understanding-observables)
+      - [Operators in Observables](#operators-in-observables)
+      - [Subjects in Observables](#subjects-in-observables)
+      - [Toast UI Designs (Notifications)](#toast-ui-designs-notifications)
     - [Handling Forms in Angular Apps](#handling-forms-in-angular-apps)
     - [Using Pipes to Transform Output](#using-pipes-to-transform-output)
     - [Making Http Requests](#making-http-requests)
@@ -841,7 +844,69 @@ The `AuthGuard` will prevent unauthorized access to the `/dashboard` route and u
 
 ### Understanding Observables
 
+An observable in Angular is used as a data source, representing a stream of data that can emit values over time.  These data sources can come from various places such as user input, events, HTTP requests, or data generated programmatically.
 
+Observables are part of the RxJS library and rely on the observer pattern.  An observable emits data over time and observers subscribe to receive and react to this data.  Between the observable and the observer lies a stream or timeline where multiple events can be emitted by the observable.
+
+When working with observables, you typically handle data in 3 ways:
+
+1. Handling the **data** emitted by the observable
+   - Ex: What should happen when I receive a data package?
+2. Handing **errors**
+   - Ex: What should happen when I receive an error?
+3. Handling the **completion** of the observable (not all complete, e.g., button)
+   - What should happen when the observable completes?
+
+Overall, observables play a crucial role in handling asynchronous events and data in Angular applications, enabling responsive and efficient user interfaces.  They allow you to work with data streams, apply transformations, and react to events while maintaining clean and manageable code.
+
+#### Operators in Observables
+
+Operators are methods used in the observable pipeline to transform, filter, and manipulate the data emitted by the observable before it reaches the observer.  These operators are typically used within the `pipe` method.  Examples include `filter`, `map`, and `subscribe`.
+
+```ts
+  import { Observable } from 'rxjs';
+  import { map, filter } from 'rxjs/operators';
+
+  const source$ = new Observable<number>((observer) => {
+    observer.next(1);
+    observer.next(2);
+    observer.next(3);
+    observer.complete();
+  });
+
+  source$
+    .pipe(
+      filter((value) => value % 2 === 0), // Only emit even numbers
+      map((value) => value * 2) // Double the values
+    )
+    .subscribe((value) => {
+      console.log(value); // Output: 4
+    });
+```
+
+#### Subjects in Observables
+
+Subjects are a type of observable and a better alternative to using the EventEmitter for custom event handling in Angular.  You can manually subscribe to a subject or use it as an output for data transmission.
+
+```ts
+  import { Subject } from 'rxjs';
+
+  const mySubject = new Subject<number>();
+
+  mySubject.subscribe((data) => {
+    console.log(data); // Output: 42
+  });
+
+  mySubject.next(42);
+```
+
+It is essential to unsubscribe from observables when they are no longer needed to prevent memory leaks.  Angular handles this automatically for some built-in observables, but when you work with custom observables, you must manually unsubscribe.
+
+#### Toast UI Designs (Notifications)
+
+Toast UI designs are a user interface pattern for displaying non-intrusive notifications or messages to users.  They are often used to provide feedback on the outcome of actions or to convey information without disrupting the user's workflow.
+
+Toast designs are often used in conjunction with observables to provide a responsive and user-friendly experience in the context of handling asynchronous events and user notifications.
 
 ### Handling Forms in Angular Apps
 
