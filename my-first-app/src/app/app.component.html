@@ -1,47 +1,28 @@
 <div class="container">
   <div class="row">
-    <div class="col-xs-12 col-sm-10 col-me-8 col-sm-offset-1 col-md-offset-2">
-      <form #signupForm="ngForm" (ngSubmit)="onSubmit()">
+    <div class="col-xs-12 col-sm-10 col-md-8 col-sm-offset-1 col-md-offset-2">
+      <form>
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="username">Username</label>
           <input
-            type="email"
-            id="email"
-            name="email"
-            ngModel
-            required
-            email
-            class="form-control"
-            #email="ngModel">
-          <span class="help-block" *ngIf="!email.valid && email.touched">Please enter a valid email!</span>
-        </div>
-        <div class="form-group">
-          <label for="subscription">Choose a subscription</label>
-          <select
-            name="subscription"
-            id="subscription"
-            [ngModel]="selectedSubscription"
+            type="text"
+            id="username"
             class="form-control">
-              <option
-                [value]="subscription"
-                *ngFor="let subscription of subscriptions">
-                {{ subscription }}
-              </option>
-          </select>
         </div>
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="email">email</label>
           <input
-            type="password"
-            id="password"
-            name="password"
-            ngModel
-            required
-            class="form-control"
-            #password="ngModel">
-          <span class="help-block" *ngIf="!password.valid && password.touched">Please enter a valid password!</span>
+            type="text"
+            id="email"
+            class="form-control">
         </div>
-        <p *ngIf="!signupForm.valid && signupForm.touched">The form is invalid!</p>
+        <div class="radio" *ngFor="let gender of genders">
+          <label>
+            <input
+              type="radio"
+              [value]="gender">{{ gender }}
+          </label>
+        </div>
         <button class="btn btn-primary" type="submit">Submit</button>
       </form>
     </div>
