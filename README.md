@@ -921,7 +921,7 @@ In the template-driven approach, Angular infers the form structure form the HTML
 1. **Form Setup**:
    - Use `ngModel` to indicate form controls.  Add a `name` attribute to identify them.  
    - Make the form submittable by using the `(ngSubmit)` directive.
-   - Use a local reference to the form for access.
+   - Use a local reference set to `ngForm` to the form to work with the form state and use `.value` for access to the form data.
    - Use `@ViewChild` instead of passing in the form to `onSubmit()` if you need to access the form before the point of submission.
    - Define default values with one-way (e.g., `[ngModel]="defaultQuestion"`) or two-way binding.
    - Use `reset()` to reset the form values and state
