@@ -41,6 +41,8 @@ This project was completed as part of Maximilian Schwarzm&uuml;ller's course [An
       - [Subjects in Observables](#subjects-in-observables)
       - [Toast UI Designs (Notifications)](#toast-ui-designs-notifications)
     - [Handling Forms in Angular Apps](#handling-forms-in-angular-apps)
+      - [Template-Driven Approach](#template-driven-approach)
+      - [Reactive Approach](#reactive-approach)
     - [Using Pipes to Transform Output](#using-pipes-to-transform-output)
     - [Making Http Requests](#making-http-requests)
     - [Authentication \& Route Protection in Angular](#authentication--route-protection-in-angular)
@@ -909,6 +911,86 @@ Toast UI designs are a user interface pattern for displaying non-intrusive notif
 Toast designs are often used in conjunction with observables to provide a responsive and user-friendly experience in the context of handling asynchronous events and user notifications.
 
 ### Handling Forms in Angular Apps
+
+Angular gives you a JSON representation of your form, making it simple to retrieve user values and see and work with the state of the form.  Handling forms in Angular involves two approaches:  template-driven and reactive.
+
+#### Template-Driven Approach
+
+In the template-driven approach, Angular infers the form structure form the HTML template.
+
+1. **Form Setup**:
+   - Use `ngModel` to indicate form controls.  Add a `name` attribute to identify them.  
+   - Make the form submittable by using the `(ngSubmit)` directive.
+   - Use a local reference to the form for access.
+   - Use `@ViewChild` instead of passing in the form to `onSubmit()` if you need to access the form before the point of submission.
+   - Define default values with one-way (e.g., `[ngModel]="defaultQuestion"`) or two-way binding.
+   - Use `reset()` to reset the form values and state
+2. **Validation**:
+   - Use directives like `required` and `email` to specify validation rules.
+   - Angular dynamically adds CSS classes to indicate control state (e.g., `ng-invalid`, `ng-touched`).  You can use these classes for styling.
+   - If a form is not valid, you can disable the submit button with `[disabled]="!f.valid"`.
+   - Use `*ngIf` to display a warning/error message depending on the state of the form (e.g., `*ngIf="!email.valid && email.touched"`).
+3. **Built-In Validators**:
+   - Angular provides a set of built-in validators accessible via the `Validators` class.
+   - For template-drive forms, you can use directives marked with "D" from [Angular's official docs](https://angular.io/api/forms/Validators) for validation.
+4. **Form Controls**:
+   - Use the `ngForm` object properties (e.g. `dirty`, `disabled`, `errors`, `invalid`, `value`) for various form control operations.
+   - Group form controls with `ngModelGroup`.
+   - Set a local reference equal to `ngModelGroup` to output a message if the values are invalid with `*ngIf`.
+   - Use `setValue()` and `patchValue()` to overwrite the values of each control or specific controls respectively
+
+The template-driven approach is used for simple forms, rapid prototyping, integrating with existing HTML, minimized TypeScript, and cases where less custom validation logic is okay.
+
+#### Reactive Approach
+
+The reactive approach involves programmatically defining and configuring the form using TypeScript.
+
+1. **Form Setup**:
+   - Add the `ReactiveFormsModule` to your `app.module.ts`.
+   - Use `setValue` to prepopulate all form values and `patchValue` to prepopulate specific values.
+   - Use `reset` to clear the form.
+   - Track changes with `valueChanges.subscribe()` and `statusChanges.subscribe()`.
+
+    ```ts
+      import { FormGroup, FormControl, Validators } from '@angular/forms';
+
+      ngOnInit() {
+        this.signupForm = new FormGroup({
+            username: new FormControl(null, [Validators.required, Validators.email]),
+            // Other form controls
+        });
+      }
+    ```
+
+2. **Form Controls**:
+   - Create a `FormGroup` object to represent the form structure in TypeScript's `OnInit()`.  Define form controls within the `FormGroup` as key-value pairs.  
+   - Add the `[formGroup]` directive to the `<form>` element and `[formControlName]` for individual controls.
+   - Group controls using `FormGroup` in TypeScript and `FormGroupName` in the template.
+   - Use `FormArray` for arrays of form controls and sync them using `formArrayName` in the template.  You can use `*ngFor` to loop through the array in the template.  Be sure to type cast the `FormArray` (e.g., `(<FormArray>this.signupForm.get('hobbies'))`).
+
+    ```html
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+        <input formControlName="username">
+        <!-- Other form controls -->
+        <button type="submit">Submit</button>
+      </form>
+    ```
+
+3. **Validation**:
+   - Access control properties and validation using `signupForm.get('controlName)`.
+   - CSS styling and error messages are similar to the template-driven approach.
+
+    ```html
+      <input formControlName="username">
+      <div *ngIf="signupForm.get('username').invalid && signupForm.get('username').touched">Invalid username</div>
+    ```
+
+4. **Custom Validators**:
+   - Create custom validators by returning `null` for valid or a validation error object for invalid values.
+5. **Async Validators**:
+   - Implement custom async validators as a third argument in `new FormControl()`.
+
+The reactive approach is used for complex and dynamic forms, type safety, testing, programmatic control, and reactivity to data changes.
 
 ### Using Pipes to Transform Output
 
