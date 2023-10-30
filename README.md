@@ -994,6 +994,16 @@ The reactive approach is used for complex and dynamic forms, type safety, testin
 
 ### Using Pipes to Transform Output
 
+Pipes in Angular are used to transform output values.  For example, if you're using string interpolation to output a name or date, you can add a pipe (`|`) after the variable name and `uppercase` to output the name in all caps or `date:'fullDate'` to output a date as `Monday, August 16, 2042`.  Notice that the date pipe takes a parameter.  It's also possible to chain multiple pipes together.
+
+#### Custom Pipes
+
+To create a custom pipe, create a new `name.pipe.ts` file that exports the pipe class (alternatively use the CLI shortcut `ng g p name`).  Include a `@Pipe` decorator with the `name` of the pipe that you'll use in the string interpolation and remember to add the class name to the `@NgModule` `declarations`.  Just like built in pipes, custom pipes can be parametized and have custom arguments passed in.
+
+#### Async Pipes
+
+Using the `async` parameter tells Angular to recognize that the output is a Promise and to wait until that Promise is resolved before displaying the data.
+
 ### Making Http Requests
 
 ### Authentication & Route Protection in Angular
