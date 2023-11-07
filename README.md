@@ -1006,7 +1006,175 @@ Using the `async` parameter tells Angular to recognize that the output is a Prom
 
 ### Making Http Requests
 
+In Angular, when you need to interact with a server for data, you use Http requests. Instead of directly connecting to a database, Angular communicates with a server through these requests and receives responses. Here are the key concepts and best practices for making Http requests in Angular:
+
+#### Http Request Components
+
+An Http request includes:
+
+  - **URL (API Endpoint)**: This specifies the server endpoint to which the request is made, such as `/posts/1`
+  - **Http Verb (Method)**: The HTTP method used for the request, like `GET`, `POST`, `PUT`, etc.
+  - **Headers (Metadata)**: Headers are used to send additional information with the request, like the content type, and are typically defined as an object, for example: `{ "Content-Type": "application/json" }`
+  - **Body**: The request body contains the data to be sent to the server.  For example, when making a POST request, you might include a JSON object like `{ title: "New Post" }`
+
+#### Observables and Subscriptions
+
+Observables are important when dealing with Http requests in Angular.  You must subscribe to the observable that wraps the Http request, otherwise Angular will not send the request because nothing is actively listening for the response.
+
+```ts
+  import { HttpClient } from '@angular/common/http';
+
+  this.httpClient.get('/posts/1').subscribe(data => {
+    // Handle the response data here
+  });
+```
+
+#### Generics Types
+
+Also note that it's possible to define generic types on the `get()` and `post()` methods, which allows you to specify the expected data type for the response.
+
+```ts
+  this.httpClient.get<Post>('/posts/1').subscribe(post => {
+    // Handle the Post object
+  });
+```
+
+#### Best Practices for Http Requests
+
+It's recommended to separate concerns between components and services. Move the parts related to template management, like loading status and loaded data, into the component. For handling Http requests, subscribe in the component while keeping the request setup in the service. However, if your component doesn't need to handle the response and status, you can subscribe in the service.
+
+#### Handling Errors
+
+To handle errors, you can provide a second argument in the `subscribe()` method. Additionally, you can use operators like `catchError` and `throwError` to manage errors within observables.
+
+#### Headers and Query Parameters
+
+To set headers, use the `HttpHeaders` class in key-value notation. For query parameters, use the `HttpParams` class and the `set()` method.  If adding multiple parameters, create a `new HttpParams` instance and use the `append()` method for each parameter.
+
+#### Responses
+
+Http requests can return different types of responses. The default is `observe: body`, which includes the response body. You can also use `response` to get the entire response, including headers and status information, or `events` to observe events like progress. You can configure the `responseType` as `json`, `text`, or `blob` to specify the expected format of the response.
+
+#### Interceptors
+
+Interceptors are commonly used to modify request headers or responses globally within an Angular application. They allow you to add, modify, or remove headers and perform other operations on Http requests and responses.
+
+```ts
+  // app.module.ts
+  import { NgModule } from '@angular/core';
+  import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+  import { AuthInterceptor } from './auth.interceptor';
+
+  @NgModule({
+    declarations: [...],
+    imports: [HttpClientModule],
+    providers: [
+      {
+        provide: HTTP_INTERCEPTORS,
+        useClass: AuthInterceptor,
+        multi: true,
+      },
+    ],
+    bootstrap: [...],
+  })
+  export class AppModule {}
+
+  // AuthInterceptor
+  import { Injectable } from '@angular/core';
+  import {
+    HttpInterceptor,
+    HttpRequest,
+    HttpHandler,
+    HttpEvent,
+  } from '@angular/common/http';
+  import { Observable } from 'rxjs';
+
+  @Injectable()
+  export class AuthInterceptor implements HttpInterceptor {
+    intercept(
+      request: HttpRequest<any>,
+      next: HttpHandler
+    ): Observable<HttpEvent<any>> {
+      // Add an authorization header to the request
+      const authToken = 'your-auth-token';
+      const authRequest = request.clone({
+        setHeaders: { Authorization: `Bearer ${authToken}` },
+      });
+
+      return next.handle(authRequest);
+    }
+  }
+```
+
+The above interceptor adds an authorization header to all outgoing Http requests.
+
+#### Resolver
+
+Resolvers are a crucial part of Angular's routing system. They are used to fetch data before a route is activated. Resolvers are often used to ensure that necessary data is available for a component before it is displayed. To use resolvers, you need to define a resolver service and configure it in the route definition.
+
+Here's an example of a resolver (`PostResolver`) that fetches a list of posts using a service (`PostService`) before activating a component that displays those posts:
+
+```ts
+  // AppRoutingModule
+  import { NgModule } from '@angular/core';
+  import { RouterModule, Routes } from '@angular/router';
+  import { PostListComponent } from './post-list.component';
+  import { PostResolver } from './post.resolver';
+
+  const routes: Routes = [
+    {
+      path: 'posts',
+      component: PostListComponent,
+      resolve: { posts: PostResolver },
+    },
+  ];
+
+  @NgModule({
+    imports: [RouterModule.forRoot(routes)],
+    exports: [RouterModule],
+  })
+  export class AppRoutingModule {}
+
+  // PostResolver
+  import { Injectable } from '@angular/core';
+  import {
+    Resolve,
+    ActivatedRouteSnapshot,
+    RouterStateSnapshot,
+  } from '@angular/router';
+  import { Observable } from 'rxjs';
+  import { PostService } from './post.service';
+
+  @Injectable()
+  export class PostResolver implements Resolve<any> {
+    constructor(private postService: PostService) {}
+
+    resolve(
+      route: ActivatedRouteSnapshot,
+      state: RouterStateSnapshot
+    ): Observable<any> {
+      return this.postService.getPosts();
+    }
+  }
+```
+
+In this route configuration, the `resolve` property specifies that the `PostResolver` should be used to fetch the `posts` data before activating the `PostListComponent`. The resolved data is made available to the component through the route's data property.
+
+Now, when a user navigates to the `/posts` route, the resolver will ensure that the `posts` data is available before the `PostListComponent` is displayed.
+
 ### Authentication & Route Protection in Angular
+
+client sends auth data to server
+server session? to client
+
+RESTful API is stateless
+
+client and server communicate through HttpClient
+
+server will send a JSON web token - encoded string with lots of metadata (encoded not encrypted) 
+server has secret
+stored token is sent to authorize subsequent request
+client stores token in storage
 
 ### Dynamic Components
 
