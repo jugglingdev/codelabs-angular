@@ -1164,17 +1164,72 @@ Now, when a user navigates to the `/posts` route, the resolver will ensure that 
 
 ### Authentication & Route Protection in Angular
 
-client sends auth data to server
-server session? to client
+Authentication in Angular involves the process of verifying the identity of a user before granting access to certain resources or routes within an application. This is typically achieved through the exchange of authentication data between the client and the server.
 
-RESTful API is stateless
+#### Client-Server Communication for Authentication
+When a user attempts to log in, the client sends authentication data (e.g., username and password) to the server for verification. The server then checks the provided credentials and, if valid, establishes a session or issues a token to the client. It's important to note that RESTful APIs, which Angular often interacts with, are stateless, meaning each request from the client is independent and doesn't rely on previous requests.
 
-client and server communicate through HttpClient
+#### Token-based Authentication
+Angular commonly uses token-based authentication for securing communication between the client and the server. After successful authentication, the server generates a JSON Web Token (JWT), which is essentially an encoded string with metadata. This token serves as proof of the user's identity and is sent back to the client.
 
-server will send a JSON web token - encoded string with lots of metadata (encoded not encrypted) 
-server has secret
-stored token is sent to authorize subsequent request
-client stores token in storage
+##### JSON Web Token (JWT) Basics
+A JWT consists of three parts: header, payload, and signature. The header contains information about how the JWT is encoded, the payload contains the claims, and the signature is used to verify the authenticity of the token. It's important to emphasize that JWTs are encoded, not encrypted. The client decodes the token to access the information within.
+
+##### Server-Side Token Handling
+The server keeps a secret key, known only to the server, which is used to sign the JWT. When the client sends the token in subsequent requests, the server verifies the signature using its secret key to ensure the token is valid and hasn't been tampered with.
+
+##### Client-Side Token Storage
+Upon receiving the JWT, the client stores it securely. Common storage options include browser cookies or the browser's local storage or session storage. The stored token is then sent in the header of each authenticated HTTP request to authorize access to protected resources.
+
+#### Route Protection in Angular
+Angular provides a mechanism to protect routes based on the user's authentication status. This is often achieved by implementing route guards, which are services that can decide whether a route can be activated or not.
+
+Let's look at a simplified example using Angular's HttpClient for authentication and route protection:
+
+```ts
+  // Authentication Service
+  import { Injectable } from '@angular/core';
+  import { HttpClient } from '@angular/common/http';
+  import { Observable } from 'rxjs';
+
+  @Injectable({
+    providedIn: 'root',
+  })
+  export class AuthService {
+    private apiUrl = 'your-authentication-api-url';
+
+    constructor(private http: HttpClient) {}
+
+    login(credentials: { username: string, password: string }): Observable<any> {
+      return this.http.post(`${this.apiUrl}/login`, credentials);
+    }
+  }
+```
+
+```ts
+  // Route Guard
+  import { Injectable } from '@angular/core';
+  import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, Router } from '@angular/router';
+  import { AuthService } from './auth.service';
+
+  @Injectable({
+    providedIn: 'root',
+  })
+  export class AuthGuard implements CanActivate {
+    constructor(private authService: AuthService, private router: Router) {}
+
+    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+      if (this.authService.isAuthenticated()) {
+        return true;
+      } else {
+        this.router.navigate(['/login']);
+        return false;
+      }
+    }
+  }
+```
+
+In this example, the AuthService handles authentication using HttpClient, and the AuthGuard checks whether the user is authenticated before allowing access to a protected route. The actual implementation may vary based on your specific requirements and authentication flow.
 
 ### Dynamic Components
 
