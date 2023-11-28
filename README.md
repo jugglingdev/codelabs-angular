@@ -1233,6 +1233,94 @@ In this example, the AuthService handles authentication using HttpClient, and th
 
 ### Dynamic Components
 
+Dynamic components in Angular refer to the ability to load and manipulate components programmatically at runtime. There are two common ways to achieve this: using *ngIf for declarative loading and using Dynamic Component Loader for imperative loading.
+
+#### Declarative Loading with `*ngIf`
+
+You can use *ngIf to dynamically load components by embedding them within the template and controlling their visibility as in this example:
+
+```ts
+  // app.component.ts
+  import { Component } from '@angular/core';
+
+  @Component({
+    selector: 'app-root',
+    template: `
+      <h1>Welcome to Angular App!</h1>
+      <div *ngIf="shouldDisplayComponent">
+        <app-dynamic-component></app-dynamic-component>
+      </div>
+    `
+  })
+  export class AppComponent {
+    shouldDisplayComponent = true;
+  }
+```
+
+#### Imperative Loading with Dynamic Component Loader
+
+Dynamic Component Loader involves creating and adding components to the DOM programmatically using Angular services.  Developers have more control over when and how the component is added or removed in this method.
+
+```ts
+  // dynamic-component-loader.service.ts
+  import { Injectable, ComponentFactoryResolver, ViewContainerRef } from '@angular/core';
+
+  @Injectable({
+    providedIn: 'root',
+  })
+  export class DynamicComponentLoaderService {
+    constructor(private componentFactoryResolver: ComponentFactoryResolver) {}
+
+    loadComponent(viewContainerRef: ViewContainerRef, componentType: any) {
+      // Resolve the factory for the component type
+      const factory = this.componentFactoryResolver.resolveComponentFactory(componentType);
+
+      // Create and add the component to the view container
+      const componentRef = viewContainerRef.createComponent(factory);
+
+      // Access the instance of the component
+      const instance = componentRef.instance;
+
+      // Do additional configuration or interact with the dynamic component as needed
+      // ...
+
+      return instance;
+    }
+  }
+```
+
+```ts
+  // app.component.ts
+  import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+  import { DynamicComponentLoaderService } from './dynamic-component-loader.service';
+
+  @Component({
+    selector: 'app-root',
+    template: `
+      <h1>Welcome to Angular App!</h1>
+      <div #dynamicComponentContainer></div>
+      <button (click)="loadDynamicComponent()">Load Dynamic Component</button>
+    `
+  })
+  export class AppComponent implements OnInit {
+    @ViewChild('dynamicComponentContainer', { read: ViewContainerRef }) dynamicComponentContainer: ViewContainerRef;
+
+    constructor(private dynamicComponentLoaderService: DynamicComponentLoaderService) {}
+
+    ngOnInit() {
+      // Optionally, load dynamic component on component initialization
+      // this.loadDynamicComponent();
+    }
+
+    loadDynamicComponent() {
+      const dynamicComponentType = YourDynamicComponent; // Replace with your dynamic component class
+      this.dynamicComponentLoaderService.loadComponent(this.dynamicComponentContainer, dynamicComponentType);
+    }
+  }
+```
+
+This second example demonstrates a service, `DynamicComponentLoaderService`, responsible for dynamically loading components. The `app.component.ts` file then uses this service to load a dynamic component when a button is clicked or during component initialization.
+
 ### Angular Modules & Optimizing Angular Apps
 
 ### Deploying an Angular App
